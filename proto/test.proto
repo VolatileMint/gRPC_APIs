@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package test;
+option go_package = "proto/test";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service TestService {
+    // rpc EchoName(Name) returns (NameResp);
+    // rpc ReturnFibo(ReturnFiboReq) returns (ReturnFiboResp);
+    // rpc LoginUser(LoginUserReq) returns (LoginUserResp);
+    /*  */
+    rpc AddUser(AddUserReq) returns (AddUserResp);
+    rpc ModUser(ModUserReq) returns (ModUserResp);
+    rpc DelUser(DelUserReq) returns (google.protobuf.Empty);
+    rpc ListUsers(ListUsersReq) returns (ListUsersResp);
+}
+
+// message Name {
+//     string name = 1;
+// }
+// message NameResp {
+//     string text = 1;
+// }
+// message ReturnFiboReq {
+//     int32 num = 1;
+// }
+// message ReturnFiboResp {
+//     repeated int32 fibo_array = 1;
+// }
+// message LoginUserReq {
+//     string Email = 1;
+//     string Password = 2;
+// }
+// message LoginUserResp {
+//     User user = 1;
+// }
+/**/
+message Field{
+    string key = 1;
+    oneof key_value {
+        string str_value = 3;
+        int32 int_value = 4;
+        float float_value = 5;
+        double double_value = 6;
+        bool bool_value = 7;
+        Timestamp time_value = 8;
+    }
+}
+
+message User {
+    int32 id = 1;
+    string email = 2;
+    string name = 3;
+    Timestamp Timestamp = 5;
+}
+
+message Timestamp {
+    google.protobuf.Timestamp created_at = 1;
+    google.protobuf.Timestamp updated_at = 2;
+    google.protobuf.Timestamp deleted_at = 3;
+}
+
+message AddUserReq {
+    User user = 1;
+}
+message AddUserResp {
+    User user = 1;
+}
+message ModUserReq{
+    User user = 1;
+}
+message ModUserResp{
+    User user = 1;
+}
+message DelUserReq{
+    repeated int32 ids = 1;
+}
+
+message ListUsersReq {
+    repeated Field fields = 1;
+    string order_by = 2;
+    string sort = 3;
+    int32 page = 4;
+    int32 pagesize = 5;
+}
+message ListUsersResp {
+    repeated User User = 1;
+    string page_token = 2;
+    string next_page_token = 3;
+    int32 page_size = 4;
+    int32 total_size = 5;
+    string order_by = 6;
+}
