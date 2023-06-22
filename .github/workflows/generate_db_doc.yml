@@ -20,9 +20,9 @@ jobs:
           image: mysql:latest
           ports:
             - 3306:3306
-          env:
-            MYSQL_ROOT_PASSWORD: root_password
-            MYSQL_DATABASE: sample
+          # env:
+          #   MYSQL_ROOT_PASSWORD: root_password
+          #   MYSQL_DATABASE: sample
     steps:
       # githubのリポジトリにアクセスする
       - name: Checkout repository
@@ -31,11 +31,9 @@ jobs:
         with:
           token: ${{ secrets.COMIT_TOKEN }} 
 
+      # ソケットが見つからないことを回避する
       - name: show socket
         run: mysql_config --socket
-        
-      - name: Set up MySQL
-        run: mysql --host=127.0.0.1 --user=root --password=root_password --port=3306 --protocol=tcp -e "SHOW DATABASES"
       # ER図生成用のDBを作成
       - name: Create DATABASE
         run: |
