@@ -20,9 +20,10 @@ jobs:
           image: mysql:5.7
           ports:
             - 3306:3306
-        #   env:
-        #     MYSQL_ROOT_PASSWORD: root_password
-        #     MYSQL_DATABASE: sample
+          env:
+            MYSQL_ROOT_PASSWORD: root_password
+            MYSQL_DATABASE: sample
+          options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
     steps:
       # githubのリポジトリにアクセスする
       - name: Checkout repository
@@ -30,11 +31,7 @@ jobs:
         # githubで登録したトークン
         with:
           token: ${{ secrets.COMIT_TOKEN }} 
-      - name: Add file
-        run: | 
-          mkdir -p ./var/run/mysqld
-          touch ./var/run/mysqld/mysqld.sock
-          mysql.server restart
+      
       # ER図生成用のDBを作成
       - name: Create DATABASE
         run: |
