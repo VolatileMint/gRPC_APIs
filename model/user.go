@@ -13,17 +13,17 @@ import (
 )
 
 type AddUserReq struct {
-	User TbTUser
+	UserReq User
 }
 type AddUserResp struct {
-	User TbTUser
+	UserReq User
 }
 
 type ModUserReq struct {
-	User TbTUser
+	UserReq User
 }
 type ModUserResp struct {
-	User TbTUser
+	UserReq User
 }
 
 type DelUserReq struct {
@@ -36,14 +36,14 @@ type ListUsersReq struct {
 	Search *Search
 }
 type ListUsersResp struct {
-	Users []*TbTUser
+	Users []*User
 }
 
 type ListUsersByOrReq struct {
 	Search *Search
 }
 type ListUsersByOrResp struct {
-	Users []*TbTUser
+	Users []*User
 }
 
 type DelUsersByOrReq struct {
@@ -66,20 +66,20 @@ type Field struct {
 	Value     interface{} `json:"value"`
 }
 
-type TbTUser struct {
+type User struct {
 	gorm.Model
 	Email string
 	Name  string
 }
 
-func GetAllUser(s *Search) ([]*TbTUser, int64, error) {
-	var Users []*TbTUser
+func GetAllUser(s *Search) ([]*User, int64, error) {
+	var Users []*User
 	var count int64
 
 	for _, f := range s.Fields {
 		f.Key = "tb_t_users." + f.Key
 	}
-	all := GetAll(&TbTUser{}, s)
+	all := GetAll(&User{}, s)
 	if err := all.Debug().Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
@@ -90,14 +90,14 @@ func GetAllUser(s *Search) ([]*TbTUser, int64, error) {
 	}
 	return Users, count, nil
 }
-func GetAllUserByOr(s *Search) ([]*TbTUser, int64, error) {
-	var Users []*TbTUser
+func GetAllUserByOr(s *Search) ([]*User, int64, error) {
+	var Users []*User
 	var count int64
 
 	for _, f := range s.Fields {
 		f.Key = "tb_t_users." + f.Key
 	}
-	all := GetAllByOr(&TbTUser{}, s)
+	all := GetAllByOr(&User{}, s)
 	if err := all.Debug().Count(&count).Error; err != nil {
 		return nil, 0, err
 	}

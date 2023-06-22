@@ -16,7 +16,7 @@ func decodeAddUserRequest(_ context.Context, grpcReq interface{}) (interface{}, 
 		return nil, fmt.Errorf("grpc server decode request error")
 	}
 	request := &model.AddUserReq{
-		User: model.TbTUser{
+		UserReq: model.User{
 			Name:  req.User.Name,
 			Email: req.User.Email,
 		},
@@ -28,13 +28,13 @@ func encodeAddUserResponse(_ context.Context, response interface{}) (interface{}
 	if !ok {
 		return nil, fmt.Errorf("grpc server encode response error")
 	}
-	created_at := ts.New(res.User.CreatedAt)
-	updated_at := ts.New(res.User.UpdatedAt)
+	created_at := ts.New(res.UserReq.CreatedAt)
+	updated_at := ts.New(res.UserReq.UpdatedAt)
 	resp := &pb.AddUserResp{
 		User: &pb.User{
-			Id:    int32(res.User.ID),
-			Name:  res.User.Name,
-			Email: res.User.Email,
+			Id:    int32(res.UserReq.ID),
+			Name:  res.UserReq.Name,
+			Email: res.UserReq.Email,
 			Timestamp: &pb.Timestamp{
 				CreatedAt: created_at,
 				UpdatedAt: updated_at,
@@ -57,7 +57,7 @@ func decodeModUserRequest(_ context.Context, grpcReq interface{}) (interface{}, 
 		return nil, fmt.Errorf("grpc server decode request error")
 	}
 	request := &model.ModUserReq{
-		User: model.TbTUser{
+		UserReq: model.User{
 			Model: gorm.Model{ID: uint(req.User.Id)},
 			Name:  req.User.Name,
 			Email: req.User.Email,
@@ -70,13 +70,13 @@ func encodeModUserResponse(_ context.Context, response interface{}) (interface{}
 	if !ok {
 		return nil, fmt.Errorf("grpc server encode response error")
 	}
-	created_at := ts.New(res.User.CreatedAt)
-	updated_at := ts.New(res.User.UpdatedAt)
+	created_at := ts.New(res.UserReq.CreatedAt)
+	updated_at := ts.New(res.UserReq.UpdatedAt)
 	resp := &pb.ModUserResp{
 		User: &pb.User{
-			Id:    int32(res.User.ID),
-			Name:  res.User.Name,
-			Email: res.User.Email,
+			Id:    int32(res.UserReq.ID),
+			Name:  res.UserReq.Name,
+			Email: res.UserReq.Email,
 			Timestamp: &pb.Timestamp{
 				CreatedAt: created_at,
 				UpdatedAt: updated_at,

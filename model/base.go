@@ -137,8 +137,8 @@ func DelByOr(value interface{}, s *Search) (*gorm.DB, int64, error) {
 	fmt.Print("this is ", instance_type)
 
 	switch instance_type {
-	case "TbTUser":
-		instance = newStruct.Interface().(TbTUser)
+	case "User":
+		instance = newStruct.Interface().(User)
 	}
 	// get all the data with the struct and search
 	all := GetAllByOr(instance, s)

@@ -13,6 +13,8 @@ service TestService {
     rpc ListUsers(ListUsersReq) returns (ListUsersResp);
     // search条件の他にpage情報も使う
     rpc ListUsersByOr(ListUsersByOrReq) returns (ListUsersByOrResp);
+
+    // 
 }
 
 message Field{

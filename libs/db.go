@@ -32,9 +32,9 @@ func Connect() error {
 
 	// //db.Migrator().DropTable(&Test{}) // 既存のテーブルを削除
 	// // テーブルがない場合は新規作成する
-	// if !DB.Migrator().HasTable(&model.TbTUser{}) {
+	// if !DB.Migrator().HasTable(&model.User{}) {
 	// 	// log.Fatalln("テーブルを作成する") テーブル作成がなぜか失敗する
-	// 	DB.Migrator().CreateTable(&model.TbTUser{})
+	// 	DB.Migrator().CreateTable(&model.User{})
 	// }
 	return nil
 }

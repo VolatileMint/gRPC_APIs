@@ -10,16 +10,16 @@ import (
 )
 
 func (s UserService) AddUser(ctx context.Context, req *model.AddUserReq) (*model.AddUserResp, error) {
-	newuser := model.TbTUser{
-		Name:  req.User.Name,
-		Email: req.User.Email,
+	newuser := model.User{
+		Name:  req.UserReq.Name,
+		Email: req.UserReq.Email,
 	}
 	err := libs.DB.Create(&newuser).Debug().Error
 	if err != nil {
 		return nil, err
 	}
 	response := &model.AddUserResp{
-		User: model.TbTUser{
+		UserReq: model.User{
 			Name:  newuser.Name,
 			Email: newuser.Email,
 			Model: gorm.Model{
@@ -32,10 +32,10 @@ func (s UserService) AddUser(ctx context.Context, req *model.AddUserReq) (*model
 	return response, nil
 }
 func (s UserService) ModUser(ctx context.Context, req *model.ModUserReq) (*model.ModUserResp, error) {
-	moduser := model.TbTUser{
-		Model: gorm.Model{ID: req.User.Model.ID},
-		Name:  req.User.Name,
-		Email: req.User.Email,
+	moduser := model.User{
+		Model: gorm.Model{ID: req.UserReq.Model.ID},
+		Name:  req.UserReq.Name,
+		Email: req.UserReq.Email,
 	}
 	err := libs.DB.Updates(&moduser).Debug().Error
 	if err != nil {
@@ -43,7 +43,7 @@ func (s UserService) ModUser(ctx context.Context, req *model.ModUserReq) (*model
 	}
 
 	response := &model.ModUserResp{
-		User: model.TbTUser{
+		UserReq: model.User{
 			Name:  moduser.Name,
 			Email: moduser.Email,
 			Model: gorm.Model{
@@ -58,7 +58,7 @@ func (s UserService) ModUser(ctx context.Context, req *model.ModUserReq) (*model
 
 func (s UserService) DelUser(ctx context.Context, req *model.DelUserReq) (*model.DelUserResp, error) {
 	for _, rid := range req.Ids {
-		user := model.TbTUser{Model: gorm.Model{ID: uint(rid)}}
+		user := model.User{Model: gorm.Model{ID: uint(rid)}}
 		// 削除したいユーザーが存在するかの確認
 		err := libs.DB.First(&user).Debug().Error
 		if err != nil {
@@ -92,7 +92,7 @@ func (s UserService) ListUsersByOr(ctx context.Context, req *model.ListUsersByOr
 }
 
 func (s UserService) DelUsersByOr(ctx context.Context, req *model.DelUsersByOrReq) (*model.DelUsersByOrResp, error) {
-	tb_t_users_list := model.TbTUser{}
+	tb_t_users_list := model.User{}
 	resp, _, err := model.DelByOr(tb_t_users_list, req.Search)
 	if err != nil {
 		return nil, err

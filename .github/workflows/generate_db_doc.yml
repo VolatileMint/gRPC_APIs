@@ -1,0 +1,74 @@
+# github Actionで表示される名前
+name: Table to Document
+
+# ワークフローの実行トリガー
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'DB/**.sql'
+      - 'tbls/**.sql'
+
+jobs:
+  Generate_DB_Document:
+    # 実行環境を指定()
+    runs-on: ubuntu-latest
+    # MySQLを使う
+    services:
+        db:
+          image: mysql:5.7
+          ports:
+            - 3306:3306
+        #   env:
+        #     MYSQL_ROOT_PASSWORD: root_password
+        #     MYSQL_DATABASE: sample
+    steps:
+      # githubのリポジトリにアクセスする
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        # githubで登録したトークン
+        with:
+          token: ${{ secrets.COMIT_TOKEN }} 
+
+      # ER図生成用のDBを作成
+      - name: Create DATABASE
+        run: |
+          create_db_sql=$(<tbls/create_db.sql)
+          mysql -u root -e "$create_db_sql"
+      - name: Create table for SQL file
+        run: |
+          for file in DB/*.sql; do 
+            mysql -u root GRPC < "$file"
+          done
+      # 外部キーを後から付け足す場合の処理
+      - name: Add foreign key
+        run: |
+          foreign_key_sql=$(<tbls/add_foreign_key.sql)
+          mysql -u root GRPC -e "$foreign_key_sql"
+      # 上書きができないので以前のものを削除
+      - name: Delete old Document
+        run: rm -r ./tbls/DB_doc/*
+      # ドキュメントの生成
+      - name: Run tbls for generate database document
+        run: tbls doc -c ./tbls/tbls.yml
+
+    #   # self-hostedの場合は作ったものを削除
+    #   # DBの削除(SQLファイルにした方がよい?)
+    #   - name: Drop database
+    #     run: mysql -uroot -e "DROP DATABASE GRPC"
+
+      # リポジトリの更新
+      - name:  config setting
+        # ユーザー名を指定しないと更新できない
+        run: | 
+          git config --global user.name "Github Workflow"
+          git config --global user.email "DBdocument@noreply.github.com"
+          git branch
+      - name: Commit Push
+        run: |
+          if [ -n "$(git status -s)" ]; then
+            git add .
+            git commit -m "generate DB document"
+            git push 
+          fi

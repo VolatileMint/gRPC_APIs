@@ -1,0 +1,2 @@
+dsn: mysql://root:@localhost:3306/Users
+docPath: tbls/DB_doc
