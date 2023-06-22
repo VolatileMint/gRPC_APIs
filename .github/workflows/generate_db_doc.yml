@@ -30,7 +30,8 @@ jobs:
         # githubで登録したトークン
         with:
           token: ${{ secrets.COMIT_TOKEN }} 
-
+      - name: Add file
+        run: touch ./var/run/mysqld/mysqld.sock
       # ER図生成用のDBを作成
       - name: Create DATABASE
         run: |
