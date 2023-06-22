@@ -6,7 +6,6 @@ import (
 	"gRPC_APIs/model"
 	pb "gRPC_APIs/proto"
 
-	"google.golang.org/protobuf/types/known/emptypb"
 	ts "google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 )
@@ -105,18 +104,18 @@ func decodeDelUserRequest(_ context.Context, grpcReq interface{}) (interface{}, 
 	return request, nil
 }
 func encodeDelUserResponse(_ context.Context, response interface{}) (interface{}, error) {
-	_, ok := response.(model.Empty)
+	_, ok := response.(model.DelUserResp)
 	if !ok {
 		return nil, fmt.Errorf("grpc server encode response error")
 	}
-	return &emptypb.Empty{}, nil
+	return &pb.DelUserResp{}, nil
 }
-func (s *gRPCServer) DelUser(ctx context.Context, req *pb.DelUserReq) (*emptypb.Empty, error) {
+func (s *gRPCServer) DelUser(ctx context.Context, req *pb.DelUserReq) (*pb.DelUserResp, error) {
 	_, resp, err := s.delUser.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return resp.(*emptypb.Empty), nil
+	return resp.(*pb.DelUserResp), nil
 }
 
 func decodeListUsersRequest(_ context.Context, request interface{}) (interface{}, error) {
@@ -144,11 +143,7 @@ func decodeListUsersRequest(_ context.Context, request interface{}) (interface{}
 	}
 	return &model.ListUsersReq{
 		Search: &model.Search{
-			Fields:  fields,
-			OrderBy: req.OrderBy,
-			Sort:    req.Sort,
-			Limit:   int(req.Pagesize),
-			Offset:  int(req.Page),
+			Fields: fields,
 		},
 	}, nil
 }
@@ -164,7 +159,9 @@ func encodeListUsersResponse(_ context.Context, response interface{}) (interface
 
 		updated_at := ts.New(r.Model.UpdatedAt)
 		Users[i] = &pb.User{
-			Id: int32(r.Model.ID),
+			Id:    int32(r.Model.ID),
+			Email: r.Email,
+			Name:  r.Name,
 			Timestamp: &pb.Timestamp{
 				CreatedAt: created_at,
 				UpdatedAt: updated_at,
@@ -181,4 +178,117 @@ func (s *gRPCServer) ListUsers(ctx context.Context, req *pb.ListUsersReq) (*pb.L
 		return nil, err
 	}
 	return resp.(*pb.ListUsersResp), nil
+}
+
+func decodeListUsersByOrRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req, ok := request.(*pb.ListUsersByOrReq)
+	if !ok {
+		return nil, fmt.Errorf("grpc server decode request error！")
+	}
+	var fields []*model.Field
+	var key_value interface{}
+	for _, v := range req.Fields {
+		switch v.KeyValue.(type) {
+		case *pb.Field_StrValue:
+			key_value = v.GetStrValue()
+		case *pb.Field_IntValue:
+			key_value = v.GetIntValue()
+		case *pb.Field_BoolValue:
+			key_value = v.GetBoolValue()
+		case *pb.Field_TimeValue:
+			key_value = v.GetTimeValue()
+		}
+		fields = append(fields, &model.Field{
+			Key:   v.Key,
+			Value: key_value,
+		})
+	}
+	return &model.ListUsersByOrReq{
+		Search: &model.Search{
+			Fields:   fields,
+			OrderBy:  req.OrderBy,
+			Sort:     req.Sort,
+			Page:     int(req.Page),
+			PageSize: int(req.Pagesize),
+		},
+	}, nil
+}
+
+func encodeListUsersByOrResponse(_ context.Context, response interface{}) (interface{}, error) {
+	resp, ok := response.(*model.ListUsersByOrResp)
+	if !ok {
+		return nil, fmt.Errorf("grpc server encode response error！")
+	}
+	Users := make([]*pb.User, len(resp.Users))
+	for i, r := range resp.Users {
+		created_at := ts.New(r.Model.CreatedAt)
+
+		updated_at := ts.New(r.Model.UpdatedAt)
+		Users[i] = &pb.User{
+			Id:    int32(r.Model.ID),
+			Email: r.Email,
+			Name:  r.Name,
+			Timestamp: &pb.Timestamp{
+				CreatedAt: created_at,
+				UpdatedAt: updated_at,
+			},
+		}
+
+	}
+	r := &pb.ListUsersByOrResp{User: Users}
+	return r, nil
+}
+
+func (s *gRPCServer) ListUsersByOr(ctx context.Context, req *pb.ListUsersByOrReq) (*pb.ListUsersByOrResp, error) {
+	_, resp, err := s.listUsersByOr.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*pb.ListUsersByOrResp), nil
+}
+
+func decodeDelUsersByOrRequest(_ context.Context, request interface{}) (interface{}, error) {
+	req, ok := request.(*pb.DelUsersByOrReq)
+	if !ok {
+		return nil, fmt.Errorf("grpc server decode request error！")
+	}
+	var fields []*model.Field
+	var key_value interface{}
+	for _, v := range req.Fields {
+		switch v.KeyValue.(type) {
+		case *pb.Field_StrValue:
+			key_value = v.GetStrValue()
+		case *pb.Field_IntValue:
+			key_value = v.GetIntValue()
+		case *pb.Field_BoolValue:
+			key_value = v.GetBoolValue()
+		case *pb.Field_TimeValue:
+			key_value = v.GetTimeValue()
+		}
+		fields = append(fields, &model.Field{
+			Key:   v.Key,
+			Value: key_value,
+		})
+	}
+	return &model.ListUsersByOrReq{
+		Search: &model.Search{
+			Fields: fields,
+		},
+	}, nil
+}
+
+func encodeDelUsersByOrResponse(_ context.Context, response interface{}) (interface{}, error) {
+	_, ok := response.(*model.DelUsersByOrResp)
+	if !ok {
+		return nil, fmt.Errorf("grpc server encode response error")
+	}
+	return &pb.DelUserResp{}, nil
+}
+
+func (s *gRPCServer) DelUsersByOr(ctx context.Context, req *pb.DelUsersByOrReq) (*pb.DelUsersByOrResp, error) {
+	_, resp, err := s.delUsersByOr.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.(*pb.DelUsersByOrResp), nil
 }

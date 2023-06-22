@@ -47,8 +47,7 @@ func (s UserService) ModUser(ctx context.Context, req *model.ModUserReq) (*model
 			Name:  moduser.Name,
 			Email: moduser.Email,
 			Model: gorm.Model{
-				ID: moduser.ID,
-				// DBに接続できていないので仮
+				ID:        moduser.ID,
 				CreatedAt: moduser.CreatedAt,
 				DeletedAt: moduser.DeletedAt,
 			},
@@ -56,22 +55,24 @@ func (s UserService) ModUser(ctx context.Context, req *model.ModUserReq) (*model
 	}
 	return response, nil
 }
-func (s UserService) DelUser(ctx context.Context, req *model.DelUserReq) error {
+
+func (s UserService) DelUser(ctx context.Context, req *model.DelUserReq) (*model.DelUserResp, error) {
 	for _, rid := range req.Ids {
 		user := model.TbTUser{Model: gorm.Model{ID: uint(rid)}}
 		// 削除したいユーザーが存在するかの確認
-		err := libs.DB.First(&user)
+		err := libs.DB.First(&user).Debug().Error
 		if err != nil {
-			return fmt.Errorf("ユーザーが見つかりませんでした%v", err)
+			return nil, fmt.Errorf("ユーザーが見つかりませんでした%v", err)
 		}
 
 		resperr := libs.DB.Delete(&user)
 		if resperr != nil {
-			return fmt.Errorf("削除に失敗しました%v", err)
+			return nil, fmt.Errorf("削除に失敗しました%v", resperr)
 		}
 	}
-	return nil
+	return &model.DelUserResp{}, nil
 }
+
 func (s UserService) ListUsers(ctx context.Context, req *model.ListUsersReq) (*model.ListUsersResp, error) {
 	resp, _, err := model.GetAllUser(req.Search)
 	if err != nil {
@@ -79,4 +80,25 @@ func (s UserService) ListUsers(ctx context.Context, req *model.ListUsersReq) (*m
 	}
 	response := &model.ListUsersResp{Users: resp}
 	return response, nil
+}
+
+func (s UserService) ListUsersByOr(ctx context.Context, req *model.ListUsersByOrReq) (*model.ListUsersByOrResp, error) {
+	resp, _, err := model.GetAllUserByOr(req.Search)
+	if err != nil {
+		return nil, err
+	}
+	response := &model.ListUsersByOrResp{Users: resp}
+	return response, nil
+}
+
+func (s UserService) DelUsersByOr(ctx context.Context, req *model.DelUsersByOrReq) (*model.DelUsersByOrResp, error) {
+	tb_t_users_list := model.TbTUser{}
+	resp, _, err := model.DelByOr(tb_t_users_list, req.Search)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Error != nil {
+		return nil, resp.Error
+	}
+	return &model.DelUsersByOrResp{}, nil
 }

@@ -1,9 +1,14 @@
+/*
+ * @Author: ShotaTakeda
+ * @Date: 2023-04-10 15:52:14
+ * @LastEditTime: 2023-04-24 11:01:14
+ * @LastEditors: ShotaTakeda s-takeda@housei-inc.com
+ * @Description:
+ * @FilePath: \gRPC_APIs\model\user.go
+ */
 package model
 
 import (
-	"fmt"
-	"time"
-
 	"gorm.io/gorm"
 )
 
@@ -13,17 +18,18 @@ type AddUserReq struct {
 type AddUserResp struct {
 	User TbTUser
 }
+
 type ModUserReq struct {
 	User TbTUser
 }
 type ModUserResp struct {
 	User TbTUser
 }
+
 type DelUserReq struct {
 	Ids []int32
 }
-
-type Empty struct {
+type DelUserResp struct {
 }
 
 type ListUsersReq struct {
@@ -32,12 +38,26 @@ type ListUsersReq struct {
 type ListUsersResp struct {
 	Users []*TbTUser
 }
+
+type ListUsersByOrReq struct {
+	Search *Search
+}
+type ListUsersByOrResp struct {
+	Users []*TbTUser
+}
+
+type DelUsersByOrReq struct {
+	Search *Search
+}
+type DelUsersByOrResp struct {
+}
+
 type Search struct {
-	Fields  []*Field `json:"fields"`
-	OrderBy string   `json:"order_by"`
-	Sort    string   `json:"sort"`
-	Limit   int      `json:"limit"`
-	Offset  int      `json:"offset"`
+	Fields   []*Field `json:"fields"`
+	OrderBy  string   `json:"order_by"`
+	Sort     string   `json:"sort"`
+	Page     int      `json:"page"`
+	PageSize int      `json:"page_size"`
 }
 
 type Field struct {
@@ -53,23 +73,39 @@ type TbTUser struct {
 }
 
 func GetAllUser(s *Search) ([]*TbTUser, int64, error) {
-	// 元が理解できなかった
 	var Users []*TbTUser
 	var count int64
 
-	for i := 0; i < 3; i++ {
-		time := time.Now()
-		new := &TbTUser{
-			Model: gorm.Model{
-				ID:        uint(i),
-				CreatedAt: time,
-				UpdatedAt: time,
-			},
-			Name:  fmt.Sprintf("test%v", i),
-			Email: fmt.Sprintf("test%v@test.com", i),
-		}
-		Users = append(Users, new)
-		count++
+	for _, f := range s.Fields {
+		f.Key = "tb_t_users." + f.Key
+	}
+	all := GetAll(&TbTUser{}, s)
+	if err := all.Debug().Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+
+	all = all.Scopes(Paginate(s.Page, s.PageSize))
+	if err := all.Debug().Find(&Users).Error; err != nil {
+		return nil, 0, err
+	}
+	return Users, count, nil
+}
+func GetAllUserByOr(s *Search) ([]*TbTUser, int64, error) {
+	var Users []*TbTUser
+	var count int64
+
+	for _, f := range s.Fields {
+		f.Key = "tb_t_users." + f.Key
+	}
+	all := GetAllByOr(&TbTUser{}, s)
+	if err := all.Debug().Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+
+	all = all.Scopes(Paginate(s.Page, s.PageSize))
+
+	if err := all.Debug().Find(&Users).Error; err != nil {
+		return nil, 0, err
 	}
 	return Users, count, nil
 }

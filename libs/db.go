@@ -2,7 +2,6 @@ package libs
 
 import (
 	"fmt"
-	"gRPC_APIs/model"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -31,11 +30,11 @@ func Connect() error {
 		return fmt.Errorf("DB接続に失敗しました:%v", err)
 	}
 
-	//db.Migrator().DropTable(&Test{}) // 既存のテーブルを削除
-	// テーブルがない場合は新規作成する
-	if !DB.Migrator().HasTable(&model.TbTUser{}) {
-		// log.Fatalln("テーブルを作成する") テーブル作成がなぜか失敗する
-		DB.Migrator().CreateTable(&model.TbTUser{})
-	}
+	// //db.Migrator().DropTable(&Test{}) // 既存のテーブルを削除
+	// // テーブルがない場合は新規作成する
+	// if !DB.Migrator().HasTable(&model.TbTUser{}) {
+	// 	// log.Fatalln("テーブルを作成する") テーブル作成がなぜか失敗する
+	// 	DB.Migrator().CreateTable(&model.TbTUser{})
+	// }
 	return nil
 }

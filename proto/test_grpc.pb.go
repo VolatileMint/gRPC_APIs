@@ -11,7 +11,6 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -25,8 +24,11 @@ const _ = grpc.SupportPackageIsVersion7
 type TestServiceClient interface {
 	AddUser(ctx context.Context, in *AddUserReq, opts ...grpc.CallOption) (*AddUserResp, error)
 	ModUser(ctx context.Context, in *ModUserReq, opts ...grpc.CallOption) (*ModUserResp, error)
-	DelUser(ctx context.Context, in *DelUserReq, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	DelUser(ctx context.Context, in *DelUserReq, opts ...grpc.CallOption) (*DelUserResp, error)
+	DelUsersByOr(ctx context.Context, in *DelUsersByOrReq, opts ...grpc.CallOption) (*DelUsersByOrResp, error)
 	ListUsers(ctx context.Context, in *ListUsersReq, opts ...grpc.CallOption) (*ListUsersResp, error)
+	// search条件の他にpage情報も使う
+	ListUsersByOr(ctx context.Context, in *ListUsersByOrReq, opts ...grpc.CallOption) (*ListUsersByOrResp, error)
 }
 
 type testServiceClient struct {
@@ -55,9 +57,18 @@ func (c *testServiceClient) ModUser(ctx context.Context, in *ModUserReq, opts ..
 	return out, nil
 }
 
-func (c *testServiceClient) DelUser(ctx context.Context, in *DelUserReq, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
+func (c *testServiceClient) DelUser(ctx context.Context, in *DelUserReq, opts ...grpc.CallOption) (*DelUserResp, error) {
+	out := new(DelUserResp)
 	err := c.cc.Invoke(ctx, "/test.TestService/DelUser", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *testServiceClient) DelUsersByOr(ctx context.Context, in *DelUsersByOrReq, opts ...grpc.CallOption) (*DelUsersByOrResp, error) {
+	out := new(DelUsersByOrResp)
+	err := c.cc.Invoke(ctx, "/test.TestService/DelUsersByOr", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -73,14 +84,26 @@ func (c *testServiceClient) ListUsers(ctx context.Context, in *ListUsersReq, opt
 	return out, nil
 }
 
+func (c *testServiceClient) ListUsersByOr(ctx context.Context, in *ListUsersByOrReq, opts ...grpc.CallOption) (*ListUsersByOrResp, error) {
+	out := new(ListUsersByOrResp)
+	err := c.cc.Invoke(ctx, "/test.TestService/ListUsersByOr", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TestServiceServer is the server API for TestService service.
 // All implementations must embed UnimplementedTestServiceServer
 // for forward compatibility
 type TestServiceServer interface {
 	AddUser(context.Context, *AddUserReq) (*AddUserResp, error)
 	ModUser(context.Context, *ModUserReq) (*ModUserResp, error)
-	DelUser(context.Context, *DelUserReq) (*emptypb.Empty, error)
+	DelUser(context.Context, *DelUserReq) (*DelUserResp, error)
+	DelUsersByOr(context.Context, *DelUsersByOrReq) (*DelUsersByOrResp, error)
 	ListUsers(context.Context, *ListUsersReq) (*ListUsersResp, error)
+	// search条件の他にpage情報も使う
+	ListUsersByOr(context.Context, *ListUsersByOrReq) (*ListUsersByOrResp, error)
 	mustEmbedUnimplementedTestServiceServer()
 }
 
@@ -94,11 +117,17 @@ func (UnimplementedTestServiceServer) AddUser(context.Context, *AddUserReq) (*Ad
 func (UnimplementedTestServiceServer) ModUser(context.Context, *ModUserReq) (*ModUserResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ModUser not implemented")
 }
-func (UnimplementedTestServiceServer) DelUser(context.Context, *DelUserReq) (*emptypb.Empty, error) {
+func (UnimplementedTestServiceServer) DelUser(context.Context, *DelUserReq) (*DelUserResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelUser not implemented")
+}
+func (UnimplementedTestServiceServer) DelUsersByOr(context.Context, *DelUsersByOrReq) (*DelUsersByOrResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelUsersByOr not implemented")
 }
 func (UnimplementedTestServiceServer) ListUsers(context.Context, *ListUsersReq) (*ListUsersResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListUsers not implemented")
+}
+func (UnimplementedTestServiceServer) ListUsersByOr(context.Context, *ListUsersByOrReq) (*ListUsersByOrResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListUsersByOr not implemented")
 }
 func (UnimplementedTestServiceServer) mustEmbedUnimplementedTestServiceServer() {}
 
@@ -167,6 +196,24 @@ func _TestService_DelUser_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TestService_DelUsersByOr_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelUsersByOrReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestServiceServer).DelUsersByOr(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/test.TestService/DelUsersByOr",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestServiceServer).DelUsersByOr(ctx, req.(*DelUsersByOrReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _TestService_ListUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListUsersReq)
 	if err := dec(in); err != nil {
@@ -181,6 +228,24 @@ func _TestService_ListUsers_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(TestServiceServer).ListUsers(ctx, req.(*ListUsersReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TestService_ListUsersByOr_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListUsersByOrReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TestServiceServer).ListUsersByOr(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/test.TestService/ListUsersByOr",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TestServiceServer).ListUsersByOr(ctx, req.(*ListUsersByOrReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -205,8 +270,16 @@ var TestService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _TestService_DelUser_Handler,
 		},
 		{
+			MethodName: "DelUsersByOr",
+			Handler:    _TestService_DelUsersByOr_Handler,
+		},
+		{
 			MethodName: "ListUsers",
 			Handler:    _TestService_ListUsers_Handler,
+		},
+		{
+			MethodName: "ListUsersByOr",
+			Handler:    _TestService_ListUsersByOr_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
