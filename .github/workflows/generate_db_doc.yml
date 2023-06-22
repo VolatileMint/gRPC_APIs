@@ -34,6 +34,7 @@ jobs:
         run: | 
           mkdir -p ./var/run/mysqld
           touch ./var/run/mysqld/mysqld.sock
+          mysql.server restart
       # ER図生成用のDBを作成
       - name: Create DATABASE
         run: |
