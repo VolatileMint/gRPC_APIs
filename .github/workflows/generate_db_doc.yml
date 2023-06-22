@@ -31,9 +31,9 @@ jobs:
         with:
           token: ${{ secrets.COMIT_TOKEN }} 
       - name: Add file
-        run: touch ./var/run/mysqld/mysqld.sock
-      - name: show
-        run: ls -la ./var/run/mysqld/
+        run: | 
+          mkdir -p ./var/run/mysqld
+          touch ./var/run/mysqld/mysqld.sock
       # ER図生成用のDBを作成
       - name: Create DATABASE
         run: |
